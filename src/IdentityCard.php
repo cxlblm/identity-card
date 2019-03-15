@@ -27,9 +27,13 @@ class IdentityCard
         $this->id = $id;
     }
 
+    /**
+     * @param string $id
+     * @return bool|IdentityCard
+     * @throws IdentityException
+     */
     public static function make(string $id)
     {
-
         $instance = new static($id);
         if ($instance->fail()) {
             if (static::$withException) {
@@ -40,21 +44,33 @@ class IdentityCard
         return $instance;
     }
 
+    /**
+     * @param callable|null $callback
+     */
     public static function setDateFormat(?callable $callback)
     {
         static::$dateFormat = $callback;
     }
 
+    /**
+     * @return callable|null
+     */
     public static function dateFormat(): ?callable
     {
         return static::$dateFormat;
     }
 
+    /**
+     * @param bool $bool
+     */
     public static function failWithException(bool $bool)
     {
         static::$withException = $bool;
     }
 
+    /**
+     * @return bool
+     */
     public function valid(): bool
     {
         if (strlen($this->id) != 18) {
@@ -71,22 +87,34 @@ class IdentityCard
         return static::TOKEN[$mode] === strtoupper($this->id{17});
     }
 
-    public function fail()
+    /**
+     * @return bool
+     */
+    public function fail(): bool
     {
         return ! $this->valid();
     }
 
+    /**
+     * @return bool|string|object
+     */
     public function birthday()
     {
         $birthday = substr($this->id, 6, 8);
         return static::$dateFormat ? (static::$dateFormat)($birthday) : $birthday;
     }
 
+    /**
+     * @return int
+     */
     public function gender(): int
     {
         return $this->id{16} & 1;
     }
 
+    /**
+     * @return string
+     */
     public function genderDesc(): string
     {
         $gender = $this->gender();
@@ -96,7 +124,11 @@ class IdentityCard
         return static::$genderDesc[$gender];
     }
 
-    public function regionFromCode(int $code): string
+    /**
+     * @param int $code
+     * @return string|null
+     */
+    public function regionFromCode(int $code): ?string
     {
         $region = [
             1 => '华北区',
@@ -109,42 +141,66 @@ class IdentityCard
         return $region[$code] ?? null;
     }
 
+    /**
+     * @return int
+     */
     public function regionCode(): int
     {
         return (int) $this->id{1};
     }
 
+    /**
+     * @return string
+     */
     public function region(): string
     {
         return $this->regionFromCode($this->regionCode());
     }
 
+    /**
+     * @return int
+     */
     public function provinceCode(): int
     {
         return ((int) substr($this->id, 0, 2)) * 10000;
     }
 
+    /**
+     * @return string|null
+     */
     public function province(): ?string
     {
         return $this->getFromAreaCode($this->provinceCode());
     }
 
+    /**
+     * @return int
+     */
     public function cityCode(): int
     {
         return ((int) substr($this->id, 0, 4)) * 100;
     }
 
+    /**
+     * @return string|null
+     */
     public function city(): ?string
     {
         return $this->getFromAreaCode($this->cityCode());
     }
 
+    /**
+     * @return int
+     */
     public function countyCode(): int
     {
 
         return ((int) substr($this->id, 0, 6));
     }
 
+    /**
+     * @return string|null
+     */
     public function county(): ?string
     {
         return $this->getFromAreaCode($this->countyCode());
@@ -157,6 +213,10 @@ class IdentityCard
         }
     }
 
+    /**
+     * @param int $code
+     * @return string|null
+     */
     public function getFromAreaCode(int $code): ?string
     {
         $this->loadRegion();
