@@ -1,5 +1,6 @@
 {
     "name": "cxlblm/identity-card",
+    "description": "中国大陆居民身份证信息校验",
     "authors": [
         {
             "name": "cxlbm",
@@ -8,12 +9,6 @@
     ],
     "require": {
         "php": ">=7.2"
-    },
-    "repositories": {
-        "packagist": {
-            "type": "composer",
-            "url": "https://packagist.laravel-china.org"
-        }
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0"

@@ -15,11 +15,12 @@ class IdentityCard
     protected const TOKEN = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
     protected const LENGTH = 17;
     protected const MODEL = 11;
+
     protected static $genderDesc = [0 => '女', 1 => '男'];
     public static $withException = false;
     private static $dateFormat;
-    private $areaCode = [];
 
+    private $areaCode = [];
     private $id;
 
     private function __construct(string $id)
@@ -84,7 +85,7 @@ class IdentityCard
             $sum += $this->id[$i] * static::WEIGHT[$i];
         }
         $mode = $sum % static::MODEL;
-        return static::TOKEN[$mode] === strtoupper($this->id{17});
+        return static::TOKEN[$mode] === strtoupper($this->id[17]);
     }
 
     /**
@@ -109,7 +110,7 @@ class IdentityCard
      */
     public function gender(): int
     {
-        return $this->id{16} & 1;
+        return $this->id[16] & 1;
     }
 
     /**
@@ -117,11 +118,7 @@ class IdentityCard
      */
     public function genderDesc(): string
     {
-        $gender = $this->gender();
-        if (null === $gender) {
-            return null;
-        }
-        return static::$genderDesc[$gender];
+        return static::$genderDesc[$this->gender()];
     }
 
     /**
@@ -146,13 +143,13 @@ class IdentityCard
      */
     public function regionCode(): int
     {
-        return (int) $this->id{1};
+        return (int) $this->id[1];
     }
 
     /**
      * @return string
      */
-    public function region(): string
+    public function region(): ?string
     {
         return $this->regionFromCode($this->regionCode());
     }
@@ -194,7 +191,6 @@ class IdentityCard
      */
     public function countyCode(): int
     {
-
         return ((int) substr($this->id, 0, 6));
     }
 
