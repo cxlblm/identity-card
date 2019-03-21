@@ -222,4 +222,29 @@ class IdentityCardTest extends TestCase
         $this->assertEquals($county, $identity->county());
     }
 
+    public function ZodiacProvider()
+    {
+        return [
+            ['45032619840627183x', '巨蟹座'],
+            ['371581198203163691', '双鱼座'],
+            ['510623197307181694', '巨蟹座'],
+            ['210204197008045252', '狮子座'],
+            ['150203199512020472', '射手座'],
+            ['653024197412039566', '射手座'],
+            ['411024198208300980', '处女座'],
+            ['43312319791130094X', '射手座'],
+            ['130825199105138665', '金牛座'],
+            ['210224199007216341', '巨蟹座'],
+            ['141102198906264202', '巨蟹座']
+        ];
+    }
+
+    /**
+     * @dataProvider ZodiacProvider
+     */
+    public function testZodiac($id, $h)
+    {
+        $identity = $this->testMake($id);
+        $this->assertEquals($h, $identity->zodiac());
+    }
 }

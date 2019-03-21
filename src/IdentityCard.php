@@ -8,6 +8,7 @@
 
 namespace Cxlblm;
 
+use DateTimeImmutable;
 
 class IdentityCard
 {
@@ -19,6 +20,49 @@ class IdentityCard
     protected static $genderDesc = [0 => '女', 1 => '男'];
     public static $withException = false;
     private static $dateFormat;
+    protected static $zodiacSign = [
+        /*
+        1 => 'aquarius',
+        2 => 'pisces',
+        3 => 'aries',
+        4 => 'taurus',
+        5 => 'gemini',
+        6 => 'cancer',
+        7 => 'leo',
+        8 =>'virgo',
+        9 =>'libra',
+        10 =>'scorpio',
+        11 => 'sagittarius',
+        12 => 'capricorn',
+        */
+        1 => '水瓶座',
+        2 => '双鱼座',
+        3 => '牡羊座',
+        4 => '金牛座',
+        5 => '双子座',
+        6 => '巨蟹座',
+        7 => '狮子座',
+        8 => '处女座',
+        9 => '天秤座',
+        10 => '天蝎座',
+        11 => '射手座',
+        12 => '摩羯座',
+    ];
+
+    protected const ZODIAC_DATE = [
+        1 => [[1, 21], [2, 18]],
+        2 => [[2, 19], [3, 20]],
+        3 => [[3, 21], [4, 20]],
+        4 => [[4, 21], [5, 21]],
+        5 => [[5, 22], [6, 21]],
+        6 => [[6, 22], [7, 22]],
+        7 => [[7, 23], [8, 23]],
+        8 => [[8, 24], [9, 22]],
+        9 => [[9, 23], [10, 23]],
+        10 => [[10, 24], [11, 22]],
+        11 => [[11, 23], [12, 21]],
+        12 => [[12, 22], [1, 20]],
+    ];
 
     private $areaCode = [];
     private $id;
@@ -48,9 +92,9 @@ class IdentityCard
     /**
      * @param callable|null $callback
      */
-    public static function setDateFormat(?callable $callback)
+    public static function setDateFormat($format)
     {
-        static::$dateFormat = $callback;
+        static::$dateFormat = $format;
     }
 
     /**
@@ -96,13 +140,25 @@ class IdentityCard
         return ! $this->valid();
     }
 
+    private function birthdayString(): string
+    {
+        return substr($this->id, 6, 8);
+    }
+
     /**
      * @return bool|string|object
      */
     public function birthday()
     {
-        $birthday = substr($this->id, 6, 8);
-        return static::$dateFormat ? (static::$dateFormat)($birthday) : $birthday;
+        $birthday = $this->birthdayString();
+        $format = static::$dateFormat;
+        if (is_callable($format)) {
+            return $format($birthday);
+        } elseif (is_string($format)) {
+            return date(strtotime($birthday), $format);
+        } else {
+            return $birthday;
+        }
     }
 
     /**
@@ -143,7 +199,7 @@ class IdentityCard
      */
     public function regionCode(): int
     {
-        return (int) $this->id[1];
+        return (int)$this->id[1];
     }
 
     /**
@@ -159,7 +215,7 @@ class IdentityCard
      */
     public function provinceCode(): int
     {
-        return ((int) substr($this->id, 0, 2)) * 10000;
+        return ((int)substr($this->id, 0, 2)) * 10000;
     }
 
     /**
@@ -175,7 +231,7 @@ class IdentityCard
      */
     public function cityCode(): int
     {
-        return ((int) substr($this->id, 0, 4)) * 100;
+        return ((int)substr($this->id, 0, 4)) * 100;
     }
 
     /**
@@ -191,7 +247,7 @@ class IdentityCard
      */
     public function countyCode(): int
     {
-        return ((int) substr($this->id, 0, 6));
+        return ((int)substr($this->id, 0, 6));
     }
 
     /**
@@ -205,7 +261,7 @@ class IdentityCard
     private function loadRegion(): void
     {
         if (empty($this->areaCode) && file_exists(__DIR__ . '/../data/area.php')) {
-            $this->areaCode = (array) include __DIR__ . '/../data/area.php';
+            $this->areaCode = (array)include __DIR__ . '/../data/area.php';
         }
     }
 
@@ -217,5 +273,32 @@ class IdentityCard
     {
         $this->loadRegion();
         return $this->areaCode[$code] ?? null;
+    }
+
+    /**
+     * 星座
+     * @return string
+     * @throws \Exception
+     */
+    public function zodiac(): string
+    {
+        $birth = new DateTimeImmutable($this->birthdayString());
+        foreach (static::ZODIAC_DATE as $key => $item) {
+            if (
+                $birth >= $birth->setDate((int)$birth->format('Y'), ...$item[0])
+                && $birth <= $birth->setDate((int)$birth->format('Y'), ...$item[1])
+            ) {
+                return static::$zodiacSign[$key];
+            }
+        }
+        return '';
+    }
+
+    /**
+     * 生肖
+     */
+    public function animalSign()
+    {
+
     }
 }
